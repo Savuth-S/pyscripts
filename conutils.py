@@ -34,7 +34,6 @@ class ETA:
 
     def fnStart(self):
         self.m_fStart = time.perf_counter()
-        self.m_fElapsedTime = self.m_fStart
 
     def fnUpdate(self, nProgress=1):
         self.m_fElapsedTime += time.perf_counter()-self.m_fStart

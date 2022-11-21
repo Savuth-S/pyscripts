@@ -91,7 +91,6 @@ def fnBuildList(lstFielRoutes, nMaxScan, nTotalFiles=0):
     with open(sDbName, 'wb') as database:
         pickle.dump(lstRows, database)
 
-    time.sleep(5)
     return print("Database build!\n\n")
 
 
@@ -125,7 +124,7 @@ def fnScanFiles(parentRoute, lstFileRoutes):
         if os.path.isfile(fileRoute):
             image = PIL.Image.open(fileRoute)
             image = image.convert('RGBA')
-            sPixelmap = fnGeneratePixelmap(image, parentRoute)
+            sPixelmap = fnGeneratePixelmap(image)
 
             for lstFileInfo in lstFiles:
                 if sFileName == lstFileInfo[1]:  # Name check
@@ -185,6 +184,7 @@ def fnCleanInput(route):
     lstFormats = ["BMP", "DIB", "EPS", "GIF", "ICNS", "ICO", "IM",
                   "JPG", "JPEG", "MSP", "PCX", "PNG", "PPM", "SGI",
                   "TGA", "TIFF", "WEBP"]
+    lstInvalidFiles = list()
     for file in lstFiles:
         sExt = str(file).split(".")[-1].upper()
         bSupported = False
@@ -195,9 +195,13 @@ def fnCleanInput(route):
                 break
 
         if not bSupported:
-            print(f"Found Unsupported file extensions!: .{sExt}\n" +
+            print(f"Found Unsupported file extensions: .{sExt}\n" +
                   "Will proceed to ignore...")
-            del lstFiles[lstFiles.index(file)]
+            lstInvalidFiles.append(file)
+
+    for file in lstInvalidFiles:
+        del lstFiles[lstFiles.index(file)]
+
     return lstFiles
 
 
@@ -208,7 +212,6 @@ parser.add_argument('-r', '--route', required=True, dest='route')
 
 parentDir = parser.parse_args().route
 lstFileRoutes = fnCleanInput(parentDir+"/*.*")
-
 if len(lstFileRoutes) > 0:
     fnScanFiles(parentDir, lstFileRoutes)
     os.remove(sDbName)
