@@ -84,7 +84,7 @@ def fnBuildList(lstFielRoutes, nMaxScan, nTotalFiles=0):
 
             print("Current File: "+ str(sFileName))
 
-            if nId > nMaxScan-1:
+            if nId >= nMaxScan:
                 break
         eta.fnUpdate(nId)
 
@@ -94,14 +94,17 @@ def fnBuildList(lstFielRoutes, nMaxScan, nTotalFiles=0):
     return print("Database build!\n\n")
 
 
-def fnScanFiles(parentRoute, lstFileRoutes):
+def fnScanFiles(parentRoute, lstFileRoutes, nMaxScan=0):
+    nTotalFiles = len(lstFileRoutes)
+    if nMaxScan < 1:
+        nMaxScan = nTotalFiles
+
     if parentRoute[-1] != conutils.getNavCharacter():
         parentRoute += conutils.getNavCharacter()
 
-    nTotalFiles = len(lstFileRoutes)
     eta = conutils.ETA(nTotalFiles)
 
-    fnBuildList(lstFileRoutes, nTotalFiles)
+    fnBuildList(lstFileRoutes, nMaxScan, nTotalFiles)
     lstFiles = list()
     with open(sDbName, "rb") as flDb:
         lstFiles = pickle.load(flDb)
@@ -165,6 +168,9 @@ def fnScanFiles(parentRoute, lstFileRoutes):
                 # Duplicate.saveThumbnail(image) #Make check if thumbs folder exists
 
             image.close()
+
+            if nIndex >= nMaxScan:
+                break
         else:
             nErrors += 1
             lstRecord.append("\nERROR: This File Was Not Found!\n" +
@@ -208,10 +214,13 @@ def fnCleanInput(route):
 # ==Main Program==
 parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--route', required=True, dest='route')
-# TO DO: Add -m max files to scan and -s save thumbnails parameters plus opt -td thumbnail dir par
+parser.add_argument('-m', '--max-files', required=False, dest='nMax')
 
 parentDir = parser.parse_args().route
+nMaxScan = parser.parse_args().nMax
 lstFileRoutes = fnCleanInput(parentDir+"/*.*")
 if len(lstFileRoutes) > 0:
-    fnScanFiles(parentDir, lstFileRoutes)
+    fnScanFiles(parentDir, lstFileRoutes, nMaxScan)
     os.remove(sDbName)
+else:
+    print("Selected directory is empty")

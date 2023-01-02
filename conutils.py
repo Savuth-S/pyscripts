@@ -12,7 +12,7 @@ def fnClear():
 
 def getNavCharacter():
     if os.name in ("nt", "dos"):
-        return "\ "
+        return "\\"
     else:
         return "/"
 
